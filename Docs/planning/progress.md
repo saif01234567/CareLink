@@ -24,6 +24,7 @@ Step 1: requirements and feasibility. Initial documentation is prepared; the ful
 | 2026-10-04 | Scheduled reminder with Taken/Skipped/Remind me later and 10-minute snooze | User accepted recommended reminder flow; snooze changes only the notification |
 | 2026-10-04 | One gentle recording follow-up; unanswered doses remain not confirmed; later reporting with actual/approximate medicine time and separate entry time | User accepted response to taking medicine without tapping a button; follow-up delay later settled below; dose-timing thresholds remain open |
 | 2026-10-04 | Send the single automatic recording follow-up 30 minutes after the original scheduled reminder if no Taken/Skipped report is available | User confirmation; this is not a late-dose threshold or an instruction to take medicine |
+| 2026-10-04 | Offline reminders for saved schedules, local dose reports with pending-upload message, downloaded history with update time, online-only connection changes, and caregiver updates after upload | User accepted offline approach; detailed conflict and storage rules remain open |
 
 ## Completed in this documentation increment
 
@@ -38,11 +39,14 @@ Step 1: requirements and feasibility. Initial documentation is prepared; the ful
 - Updated WF-02 through WF-04 for accepted reminders, snooze, one recording follow-up, honest no-response labels, and later reports. Added criteria for timestamps, approximate times, suppressing unnecessary reminders, and avoiding double counting.
 - Set the recording follow-up to 30 minutes and updated AC-32 with an 08:00-to-08:30 example. This is a checked documentation change, not an implemented notification or executed application test.
 
+- Added accepted offline workflow WF-03a and AC-37 through AC-41. Application behavior is documented, not implemented or tested.
+
 ## Still open in Step 1
 
 - Settle workflow decisions D-02 and D-04 through D-08 in the medication workflow. D-01 and D-03 are resolved for the first version.
 - D-02 and D-07 are partly resolved: basic reminders, the 30-minute follow-up, and later reporting are accepted. Pending-to-unconfirmed timing, late-dose thresholds, snooze interaction, and correction rules still need definition.
 - D-04's main connection/removal flow and caregiver access list are accepted. Remaining details: confirmation security method, reverse invitations, coordinator permissions/assignment, historical-note access after reconnection, and whether "caretaker" names a separate role. No waiting-period length or start point needs choosing.
+- D-06 basic offline behavior is accepted; conflict handling, session/cache rules, and device recovery remain open.
 - Find and audit data that supports the adherence target, or document an accepted alternative.
 - Agree concrete teammate contributions and reconcile older responsibility tables.
 - Decide how to include the current Template #4 source in versioned documentation.
@@ -64,19 +68,19 @@ Do not automatically advance to another milestone simply because documentation w
 
 The active Git working folder is now `C:/CareLink-Repo`, cloned from `https://github.com/saif01234567/CareLink`. The original `C:/CareLink-FYP` folder remains a separate copy and should no longer be used for ongoing edits.
 
-The initial planning documents were committed as `383d899` on branch `docs/initial-planning` and pushed to GitHub. Pull request #1 was opened for review: https://github.com/saif01234567/CareLink/pull/1. The planning milestone remains in progress.
+The initial planning documents were committed as `383d899` on branch `docs/initial-planning` and pushed to GitHub. After correction commit `f762c63`, pull request #1 was merged as `1e103df`: https://github.com/saif01234567/CareLink/pull/1. The user pulled the merged main branch locally. The planning milestone remains in progress.
 
-## Files for this documentation commit
+## Files for the next documentation commit
 
-- `README.md`
-- `Docs/planning/project-scope.md`
-- `Docs/planning/ml-feasibility.md`
-- `Docs/planning/progress.md`
+The initial five-file planning change was merged in PR #1. This new offline-requirements increment changes:
+
 - `Docs/requirements/medication-workflow.md`
+- `Docs/planning/progress.md`
 
-Suggested message: `docs: define CareLink scope and initial medication workflow`
+Suggested branch: `docs/offline-workflow`.
+Suggested message: `docs: define offline reminders and dose reporting`.
 
-Stage only the listed changes after verifying them in a proper checkout. Existing datasets and historical documents are not part of this change. Commit as a draft requirements increment; do not claim that Step 1 or the ML feasibility investigation is complete.
+Review these changes, stage only these two files, and commit on the new branch. No application code is included. The assistant has not committed or pushed this increment.
 
 ## Reporting convention
 

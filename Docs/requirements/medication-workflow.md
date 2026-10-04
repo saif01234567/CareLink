@@ -46,7 +46,7 @@ Accepted flow on 2026-10-04:
 
 Before delivering a pending follow-up or snoozed notification, check whether a report is already available and cancel/suppress unnecessary reminders. A user-requested snooze and the single automatic follow-up are separate actions; their collision handling and repeated-snooze limits remain to be designed. No automatic caregiver escalation timing is selected by this flow.
 
-Notification permission, app restart, device restart, and offline behavior require an implementation design and physical Android testing. Reminder delivery and user reports are different events; notification delivery does not establish adherence.
+The offline behavior in WF-03a is accepted. Notification permission, app restart, device restart, and offline delivery still require an implementation design and physical Android testing. Reminder delivery and user reports are different events; notification delivery does not establish adherence.
 
 ### WF-03: Record a dose report
 
@@ -54,7 +54,27 @@ The patient reports taken or explicitly skipped. A taken report includes the tim
 
 Patients may report an unanswered dose later from their history. Update that scheduled dose's outcome; do not create an extra dose. For example, a patient can enter a report at 09:00 saying they took the scheduled 08:00 medicine at 08:10. Keep the scheduled time, reported medicine time, and entry time separately. A late report does not by itself prove late medicine-taking.
 
-Repeated taps or retried requests must not create duplicate dose outcomes. Corrections must preserve an audit trail. Later reporting of unanswered doses is accepted; any retrospective reporting limit, corrections to existing reports, conflicting updates, and offline synchronization remain open.
+Repeated taps or retried requests must not create duplicate dose outcomes. Corrections must preserve an audit trail. Later reporting of unanswered doses is accepted; any retrospective reporting limit, corrections to existing reports and conflicting updates remain open. Basic offline saving and upload behavior are accepted in WF-03a.
+
+### WF-03a: Use the patient app without internet
+
+Accepted by the user on 2026-10-04 for the first version:
+
+| Action | Offline behavior |
+| --- | --- |
+| Reminders for schedules already saved on the phone | Continue locally under supported device conditions |
+| Report Taken or Skipped | Save on the phone and upload when internet returns |
+| View previously downloaded patient history | Allow viewing and show when it was last updated |
+| Connect, approve, remove, or leave a caregiver connection | Require internet and server confirmation |
+| Show new reports to a caregiver | Make them available after successful upload; the caregiver view must refresh to receive them |
+
+For a dose report saved only on the phone, show: "Saved on this phone—waiting to upload". Keep upload status separate from the dose outcome: a patient may see Taken with an upload pending while the caregiver still has no report. An upload acknowledgement means the server saved the report; it does not mean a caregiver has read it.
+
+Keep pending reports through an ordinary app restart. Retry upload when connectivity returns without duplicating dose outcomes. Clear the pending status only after server acknowledgement; preserve a failed report for retry and show that upload is incomplete. Keep the original reported medicine time, its approximate-time flag, the phone entry time, and server receipt time separately. Delayed upload must not be treated as late medicine-taking.
+
+Local reminders must consider locally saved Taken/Skipped reports even before upload, so the same phone does not continue prompting after the patient reports. Caregiver views must show the freshness of available information and must not treat missing uploads as proof of skipped medication.
+
+Offline scope is limited to already saved schedules/history and dose reports. Offline schedule editing, health-reading entry, and caregiver-note entry are not granted by this decision. Conflicting edits across devices, authentication/session expiry, storage protection, cache retention, logout/account switching, and notification recovery after restart still need design. Failed uploads must not silently overwrite conflicting server reports. Do not promise reminders when the phone is off or required notification permissions are absent.
 
 ### WF-04: Classify and summarize
 
@@ -178,6 +198,11 @@ These are verification requirements, not claims of tests already performed.
 | AC-34 | Patient marks a reported medicine time approximate | Stored record and displayed history preserve that uncertainty |
 | AC-35 | Patient reports taken or skipped before a queued reminder/follow-up is delivered | Available report is checked and the unnecessary pending reminder is cancelled or suppressed |
 | AC-36 | History contains taken, skipped, and unanswered doses, then an unanswered dose is reported taken | Categories stay separate, caregiver text says "No response recorded" for unanswered doses, and summaries update without double counting |
+| AC-37 | Patient reports Taken or Skipped without internet and restarts the app normally | The report remains saved locally with the pending-upload message; caregiver data is not falsely shown as updated |
+| AC-38 | Connectivity returns and the same queued report is uploaded more than once | One effective dose outcome is saved; pending status clears only after server acknowledgement; original times are preserved |
+| AC-39 | Patient views previously downloaded history offline | History is available and clearly shows its last update time |
+| AC-40 | Patient has a supported saved schedule while offline | Local reminders run under supported device conditions and respect locally saved dose reports |
+| AC-41 | Upload fails or a conflicting server report exists | Pending data is retained and failure/conflict is visible; no false success or silent overwrite occurs |
 
 ## Decision register
 
@@ -188,7 +213,7 @@ These are verification requirements, not claims of tests already performed.
 | D-03 | Schedule entry/edit permissions | Accepted by user on 2026-10-04 for the first version: patients add and change their own schedules; caregivers and coordinators view authorized records and add follow-up notes, without schedule editing |
 | D-04 | Caregiver connection and removal | Accepted on 2026-10-04: QR/ID request, patient confirmation, removal at any time with confirmation, caregiver departure, new mutual agreement to reconnect, and caregiver access list WF-05b. Replaces waiting-period rule. Confirmation security method, reverse invitations, role terminology, coordinator permissions/assignment, and historical-note access after reconnection remain open |
 | D-05 | Timezone, travel, and clock changes | Open; preserve original timestamps and define schedule interpretation |
-| D-06 | Offline reporting and reminder support | Open; define supported behavior and duplicate/conflict handling |
+| D-06 | Offline reporting and reminder support | Accepted: saved schedules remind locally, Taken/Skipped reports save locally and upload later with a visible pending label, downloaded history shows freshness, connection changes require internet, and caregiver updates follow upload. Conflict handling, session/cache rules, and device recovery remain open |
 | D-07 | Corrections and retrospective reports | Accepted: later reporting of unanswered doses, separate reported medicine/entry times, and approximate-time flag. Reporting limits, corrections to existing reports, and conflict handling remain open; preserve history |
 | D-08 | Adherence formula and reporting coverage | Open; distinguish unknown reports from explicit missed events |
 
