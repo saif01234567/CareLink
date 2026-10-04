@@ -62,9 +62,9 @@ Do not automatically advance to another milestone simply because documentation w
 
 ## Repository state
 
-The current local folder `C:/CareLink-FYP` contains project files but is not a Git working tree: inspection found no `.git` directory and Git reported that it is not a repository. The linked remote is `https://github.com/saif01234567/CareLink`.
+The active Git working folder is now `C:/CareLink-Repo`, cloned from `https://github.com/saif01234567/CareLink`. The original `C:/CareLink-FYP` folder remains a separate copy and should no longer be used for ongoing edits.
 
-No commit or push has been performed. Before committing locally, obtain a proper clone of the existing remote and transfer these documentation changes after comparing files. Preserve the remote history; do not initialize an unrelated history or overwrite existing work blindly.
+The initial planning documents were committed as `383d899` on branch `docs/initial-planning` and pushed to GitHub. Pull request #1 was opened for review: https://github.com/saif01234567/CareLink/pull/1. The planning milestone remains in progress.
 
 ## Files for this documentation commit
 
