@@ -35,7 +35,7 @@ Build history features only from prior scheduled doses whose reports were availa
 
 The accepted exercise predicts at least one reported skipped dose on the next day, using 14 complete prior days. The prediction cutoff is midnight UTC starting the target day (the boundary at the end of the previous day). Labels allow 48 hours after the target day ends. A late upload cannot be used retrospectively as an earlier feature.
 
-No model is trained in this increment. Any eventual metrics must be labeled synthetic-only: a model can learn our invented rules and still fail on real patients. Do not present synthetic test accuracy as real-world accuracy. App demonstrations must say Demo prediction.
+The data-preparation increment did not train a model. The subsequent baseline experiment is documented in baseline-results.md. Any eventual metrics must be labeled synthetic-only: a model can learn our invented rules and still fail on real patients. Do not present synthetic test accuracy as real-world accuracy. App demonstrations must say Demo prediction.
 
 ## Checks
 
@@ -65,4 +65,29 @@ The completed simulation is assumed observed through every label deadline. Real 
 
 Verified output: 9,120 examples, 4,555 all_reported_taken, 2,493 reported_skip and 2,072 unknown (22.72%). Eligible total: 7,048. Training has 4,842 eligible examples, validation 1,081 and test 1,125, with patient assignments preserved. Test examples must remain unused for model selection. The current split separates patients but not calendar periods; a later-time evaluation is still needed before any temporal generalization claim.
 
-Five boundary tests passed: future upload masking, history-window boundaries, unknown handling, label-deadline boundaries, and positive-label precedence/target-day boundaries. No model or accuracy result exists yet.
+Five boundary tests passed: future upload masking, history-window boundaries, unknown handling, label-deadline boundaries, and positive-label precedence/target-day boundaries. For the subsequent validation-only model results, see baseline-results.md.
+
+## First baseline experiment
+
+`train_baseline.py` fits two models on the eligible training patients only:
+
+- Majority baseline: always predicts the most frequent training outcome.
+- Logistic regression: StandardScaler followed by regularized logistic regression (C=1, lbfgs, max_iter=1000). Scaling is fitted on training data only. The threshold is fixed at 0.5 before validation; no parameter search is performed.
+
+Only the seven FEATURES in prepare_examples.py enter the model. Unknown outcomes are excluded and counted. Test rows are skipped before their feature values or labels are parsed; patient IDs and split metadata are checked across all rows to reject overlap. The source file is hashed for provenance. Validation rows are evaluated; test performance remains unmeasured.
+
+Accuracy counts all correct predictions. Recall measures how many reported-skip days were caught. Precision measures how many alerts correspond to reported-skip days. A model predicting no skips can have reasonable accuracy but zero recall. The report also includes the confusion matrix, balanced accuracy, F1, ROC AUC, average precision and Brier score. Probabilities concern resolved synthetic reports, not actual ingestion or clinically calibrated risk.
+
+The model parameters are saved as inspectable JSON, not an executable pickle. The script checks that these parameters reproduce validation probabilities. This artifact is for learning, not app deployment. Overlapping daily histories produce correlated observations, so we do not claim confidence intervals based on independent rows.
+
+An isolated Python environment is located at C:/CareLink-FYP/ML-Environments/baseline. It is outside Git. From the repository root, use its interpreter:
+
+```powershell
+$mlPython = 'C:\CareLink-FYP\ML-Environments\baseline\Scripts\python.exe'
+& $mlPython -B ML/synthetic/test_train_baseline.py
+& $mlPython -B ML/synthetic/train_baseline.py --source C:/CareLink-FYP/Datasets/CareLink-Synthetic-v1-examples/daily_examples_SYNTHETIC.csv --output C:/CareLink-FYP/Datasets/CareLink-Synthetic-v1-baseline
+```
+
+The output directory must not already exist. Preserve earlier results and select a new name for a new experiment. No Git commit or push is performed by the scripts.
+
+The completed baseline run and limitations are recorded in [baseline-results.md](baseline-results.md). To recreate dependencies in your own isolated Python 3.12 environment, run `python -m pip install -r ML/synthetic/requirements-baseline.txt`.
