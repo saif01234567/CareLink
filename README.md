@@ -5,7 +5,44 @@ CareLink is an ML-assisted medication-adherence and chronic-care coordination FY
 
 ## Current stage
 
-Requirements and feasibility. The project idea is approved by the supervisor and faculty. Application implementation has not started. Current planning documents contain accepted directions and explicitly marked proposals/open decisions; they are not evidence of separate faculty approval for every implementation detail.
+Progress updated: 8 October 2026.
+
+The idea is approved by the supervisor and faculty. Requirements, visual prototyping, and a synthetic ML experiment are underway. The first baseline experiment is merged into main through PR #4. The patient app, web portal, API and database have not been implemented. Planning documents still contain open decisions; project approval does not imply approval of every implementation detail.
+
+### Completed so far
+
+- Defined initial scope, medication reporting, caregiver connections and offline behavior (PRs #1 and #2).
+- Created Figma concept screens, with a simple patient experience and additional caregiver options. These are visual prototypes, not a working app.
+- Reviewed questionnaire, claims and BETTER-BP research data. None of the inspected downloads provides the daily records needed for the proposed next-day prediction.
+- Created reproducible synthetic data: 120 fictional patients, 90 days each, and 16,380 scheduled doses (PR #3).
+- Prepared 9,120 daily examples using 14 days of history and a reporting deadline 48 hours after the target day ends. There are 7,048 eligible examples; 2,072 unknown outcomes remain excluded rather than being treated as missed or taken.
+- Trained a majority baseline and logistic regression on 4,842 eligible training examples, then evaluated on 1,081 validation examples (PR #4). All eight preparation/training tests passed. Future uploads are excluded from earlier prediction inputs, and patients remain separate across splits.
+
+### First model results: synthetic validation only
+
+| Result | Majority baseline | Logistic regression |
+| --- | ---: | ---: |
+| Accuracy | 66.6% | 71.3% |
+| Reported-skip days caught | 0 of 361 | 108 of 361 |
+| False alerts | 0 | 57 |
+
+The logistic regression threshold was fixed at 0.5. It missed 253 reported-skip days. These results demonstrate the pipeline on invented data; they do not establish real-world accuracy or clinical usefulness. The held-out test set has not been evaluated. No model is deployed in an app.
+
+### Next steps
+
+1. Compare thresholds on validation data and review missed reports versus false alerts. Threshold review has not started.
+2. Fix the demo model settings before a final held-out test evaluation. Preserve the first baseline results for comparison.
+3. Continue seeking suitable real daily data. Synthetic data does not resolve the real-world feasibility gap; inspect any sample and its usage rights before purchasing data.
+4. Finish remaining requirements and turn the approved visual direction into a small working patient/caregiver prototype, then connect the API and database step by step.
+5. Review and commit the earlier local design and dataset-audit documentation separately. Keep each milestone in its own branch, commit and pull request.
+
+### ML files and local outputs
+
+- [Synthetic data, preparation and model instructions](ML/synthetic/README.md)
+- [Baseline validation results and limitations](ML/synthetic/baseline-results.md)
+- [Data options and an unsent access-request template](Docs/planning/daily-prediction-data-options.md)
+
+The active Git folder is `C:/CareLink-Repo`. Generated datasets/results are in `C:/CareLink-FYP/Datasets/CareLink-Synthetic-v1*`; the isolated Python environment is in `C:/CareLink-FYP/ML-Environments/baseline`. These generated outputs and the environment are outside the repository. Commit the reproducible scripts, dependency list and documentation.
 
 Start with these documents:
 
