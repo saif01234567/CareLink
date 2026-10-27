@@ -2,15 +2,22 @@ import 'package:flutter/material.dart';
 
 import '../data/dose_repository.dart';
 import '../models/dose_record.dart';
+import '../data/demo_schedule.dart';
+import '../models/scheduled_dose.dart';
 
 class RecordDoseScreen extends StatefulWidget {
   const RecordDoseScreen({
     super.key,
     required this.repository,
     required this.day,
+    this.dose,
   });
+
   final DoseRepository repository;
   final String day;
+  final ScheduledDose? dose;
+
+  ScheduledDose get scheduledDose => dose ?? demoSchedule.first;
 
   @override
   State<RecordDoseScreen> createState() => _RecordDoseScreenState();
@@ -60,6 +67,7 @@ class _RecordDoseScreenState extends State<RecordDoseScreen> {
           takenAt: takenAt,
           isApproximate: outcome == DoseOutcome.taken && _approximate,
         ),
+        doseId: widget.scheduledDose.id,
       );
       if (mounted) {
         setState(() => _saving = false);
@@ -87,11 +95,16 @@ class _RecordDoseScreenState extends State<RecordDoseScreen> {
             padding: const EdgeInsets.all(24),
             children: [
               Text(
-                'Medicine A',
+                widget.scheduledDose.medicineName,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
-              Text('Demo • ${widget.day} at 08:00 AM • 1 tablet'),
+              Text('Demo • ${widget.day} at '
+                  '${TimeOfDay(
+                hour: widget.scheduledDose.hour,
+                minute: widget.scheduledDose.minute,
+              ).format(context)}'
+                  ' • ${widget.scheduledDose.doseDescription}',),
               const SizedBox(height: 24),
               Text(
                 'What happened?',

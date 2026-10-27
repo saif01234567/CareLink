@@ -2,13 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../data/demo_schedule.dart';
 import '../data/dose_repository.dart';
 import '../models/dose_record.dart';
+import '../models/scheduled_dose.dart';
 import '../widgets/medicine_card.dart';
 import 'record_dose_screen.dart';
 
 class TodayScreen extends StatefulWidget {
-  const TodayScreen({super.key, required this.repository, this.displayName});
+  const TodayScreen({
+    super.key,
+    required this.repository,
+    this.displayName,
+  });
+
   final String? displayName;
   final DoseRepository repository;
 
@@ -16,9 +23,11 @@ class TodayScreen extends StatefulWidget {
   State<TodayScreen> createState() => _TodayScreenState();
 }
 
-class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
-  DoseRecord? _record;
+class _TodayScreenState extends State<TodayScreen>
+    with WidgetsBindingObserver {
+  Map<String, DoseRecord?> _records = {};
   String _day = doseDayKey(DateTime.now());
+
   bool _busy = true;
   bool _formOpen = false;
   String? _error;
@@ -29,7 +38,11 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _load();
-    _dayTimer = Timer.periodic(const Duration(seconds: 30), (_) => _checkDay());
+
+    _dayTimer = Timer.periodic(
+      const Duration(seconds: 30),
+          (_) => _checkDay(),
+    );
   }
 
   @override
@@ -45,25 +58,39 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   }
 
   void _checkDay() {
-    if (!_busy && !_formOpen && doseDayKey(DateTime.now()) != _day) _load();
+    if (!_busy && !_formOpen && doseDayKey(DateTime.now()) != _day) {
+      _load();
+    }
   }
 
   Future<void> _load() async {
     final day = doseDayKey(DateTime.now());
+
     setState(() {
       _busy = true;
       _error = null;
     });
+
     try {
-      final record = await widget.repository.read(day);
+      final records = <String, DoseRecord?>{};
+
+      for (final dose in demoSchedule) {
+        records[dose.id] = await widget.repository.read(
+          day,
+          doseId: dose.id,
+        );
+      }
+
       if (!mounted) return;
+
       setState(() {
         _day = day;
-        _record = record;
+        _records = records;
         _busy = false;
       });
     } catch (_) {
       if (!mounted) return;
+
       setState(() {
         _busy = false;
         _error = 'Could not read phone storage. Retry before recording a dose.';
@@ -71,21 +98,32 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _recordDose() async {
+  Future<void> _recordDose(ScheduledDose dose) async {
     if (_busy || _formOpen || _error != null) return;
+    if (_records[dose.id] != null) return;
+
     if (doseDayKey(DateTime.now()) != _day) {
       await _load();
       return;
     }
+
     final day = _day;
     _formOpen = true;
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) =>
-            RecordDoseScreen(repository: widget.repository, day: day),
-      ),
-    );
-    _formOpen = false;
+
+    try {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => RecordDoseScreen(
+            repository: widget.repository,
+            day: day,
+            dose: dose,
+          ),
+        ),
+      );
+    } finally {
+      _formOpen = false;
+    }
+
     if (!mounted) return;
     await _load();
   }
@@ -110,8 +148,9 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               widget.displayName == null
                   ? 'Hello'
                   : 'Hello, ${widget.displayName}',
-              style: Theme.of(context).textTheme.headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -123,20 +162,40 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               'Today’s schedule',
               style: Theme.of(context).textTheme.titleLarge,
             ),
+            const SizedBox(height: 8),
+            Text('${demoSchedule.length} scheduled demo doses'),
             const SizedBox(height: 16),
             if (_busy)
               const Center(child: CircularProgressIndicator())
             else if (_error != null) ...[
               Text(_error!),
-              TextButton(onPressed: _load, child: const Text('Retry loading')),
+              TextButton(
+                onPressed: _load,
+                child: const Text('Retry loading'),
+              ),
             ] else
-              MedicineCard(record: _record, onRecord: _recordDose),
+              Column(
+                children: [
+                  for (final dose in demoSchedule)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: MedicineCard(
+                        key: ValueKey(dose.id),
+                        dose: dose,
+                        record: _records[dose.id],
+                        onRecord: () => _recordDose(dose),
+                      ),
+                    ),
+                ],
+              ),
             const SizedBox(height: 16),
             const Text(
-              'Fictional patient and medicine. Demo reports are saved on this '
-              'phone. Caregiver upload is not available yet. Clearing app data '
-              'or uninstalling may remove these records.',
-              style: TextStyle(fontSize: 14, color: Color(0xFF475569)),
+              'Fictional patient and medicines. Reports are saved on this '
+                  'phone only. Caregiver upload is not available yet.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF475569),
+              ),
             ),
           ],
         ),

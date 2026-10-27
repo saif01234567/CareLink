@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../data/dose_repository.dart';
 import '../models/dose_history_entry.dart';
 import '../models/dose_record.dart';
+import '../data/demo_schedule.dart';
+import '../models/scheduled_dose.dart';
+
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({
@@ -65,9 +68,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final taken = record.outcome == DoseOutcome.taken;
     final takenAt = record.takenAt;
 
-    final medicineName = entry.doseId == 'demo-medicine-a-0800'
-        ? 'Medicine A'
-        : entry.doseId;
+    ScheduledDose? scheduledDose;
+
+    for (final dose in demoSchedule) {
+      if (dose.id == entry.doseId) {
+        scheduledDose = dose;
+        break;
+      }
+    }
+
+    final medicineName = scheduledDose?.medicineName ?? entry.doseId;
+
+    final scheduledTime = scheduledDose == null
+        ? null
+        : TimeOfDay(
+      hour: scheduledDose.hour,
+      minute: scheduledDose.minute,
+    ).format(context);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -82,6 +99,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             const SizedBox(height: 8),
             Text('Scheduled day: ${entry.scheduledDay}'),
+            if (scheduledTime != null)
+              Text('Scheduled time: $scheduledTime'),
             const SizedBox(height: 12),
             Chip(
               label: Text(
