@@ -1,22 +1,42 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../data/demo_schedule.dart';
 import '../models/dose_record.dart';
+import '../models/scheduled_dose.dart';
 
 class MedicineCard extends StatelessWidget {
-  const MedicineCard({super.key, required this.record, required this.onRecord});
+  const MedicineCard({
+    super.key,
+    required this.record,
+    required this.onRecord,
+    this.dose,
+  });
 
   final DoseRecord? record;
   final VoidCallback onRecord;
+  final ScheduledDose? dose;
 
   @override
   Widget build(BuildContext context) {
+    final scheduledDose = dose ?? demoSchedule.first;
+
+    final scheduledTime = TimeOfDay(
+      hour: scheduledDose.hour,
+      minute: scheduledDose.minute,
+    ).format(context);
+
     final taken = record?.outcome == DoseOutcome.taken;
-    final label = record == null
-        ? 'Not confirmed'
-        : taken
-        ? 'Reported taken'
-        : 'Reported skipped';
+
+    final String label;
+    if (record == null) {
+      label = 'Not confirmed';
+    } else if (taken) {
+      label = 'Reported taken';
+    } else {
+      label = 'Reported skipped';
+    }
+
     final takenAt = record?.takenAt;
 
     return Card(
@@ -27,9 +47,12 @@ class MedicineCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '08:00 AM',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            Text(
+              scheduledTime,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 16),
             const Icon(
@@ -39,14 +62,15 @@ class MedicineCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Medicine A',
-              style: Theme.of(context).textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              scheduledDose.medicineName,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              '1 tablet • Sample schedule',
-              style: TextStyle(fontSize: 16),
+            Text(
+              '${scheduledDose.doseDescription} • Sample schedule',
+              style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             Chip(
@@ -63,8 +87,9 @@ class MedicineCard extends StatelessWidget {
             if (takenAt != null) ...[
               const SizedBox(height: 8),
               Text(
-                'Taken today at ${TimeOfDay.fromDateTime(takenAt).format(context)}'
-                '${record!.isApproximate ? ' (approximate)' : ''}',
+                'Taken at '
+                    '${TimeOfDay.fromDateTime(takenAt.toLocal()).format(context)}'
+                    '${record!.isApproximate ? ' (approximate)' : ''}',
               ),
             ],
             const SizedBox(height: 16),

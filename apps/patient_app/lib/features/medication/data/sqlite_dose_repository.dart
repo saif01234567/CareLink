@@ -44,13 +44,14 @@ class SqliteDoseRepository implements DoseRepository {
   }
 
   @override
-  Future<DoseRecord?> read(String day) async {
+  Future<DoseRecord?> read(String day, {
+    String doseId = defaultDemoDoseId,
+  }) async {
     final db = await _open();
     final rows = await db.query(
       'dose_reports',
       where: 'day = ? AND dose_id = ?',
-      whereArgs: [day, 'demo-medicine-a-0800'],
-    );
+      whereArgs: [day, doseId]);
     if (rows.isEmpty) return null;
     final row = rows.single;
     return DoseRecord(
@@ -64,12 +65,15 @@ class SqliteDoseRepository implements DoseRepository {
   }
 
   @override
-  Future<void> save(String day, DoseRecord record) async {
+  Future<void> save(String day,
+      DoseRecord record, {
+        String doseId = defaultDemoDoseId,
+      }) async {
     final db = await _open();
     // Do not silently replace an existing report or create duplicate dose rows.
     await db.insert('dose_reports', {
       'day': day,
-      'dose_id': 'demo-medicine-a-0800',
+      'dose_id': doseId,
       'outcome': record.outcome.name,
       'recorded_at': record.recordedAt.toUtc().toIso8601String(),
       'taken_at': record.takenAt?.toUtc().toIso8601String(),
