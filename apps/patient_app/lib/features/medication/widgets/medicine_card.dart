@@ -80,7 +80,7 @@ class MedicineCard extends StatelessWidget {
                 ),
               )
             else
-              const Text('Recorded for this demo session only.'),
+              const Text('Saved on this phone. Not uploaded.'),
           ],
         ),
       ),
