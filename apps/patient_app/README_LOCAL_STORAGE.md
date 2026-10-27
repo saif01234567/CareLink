@@ -18,7 +18,7 @@ This is a prototype milestone, not a production patient-record system.
 - Yesterday's record stays in the database; it is not shown as today's report.
 - A form opened before midnight remains attached to its displayed date.
 - Saving and loading failures are visible; the app never claims a failed write succeeded.
-- No caregiver upload, authentication, history screen, correction workflow or reminders yet.
+- History is available. Caregiver upload, authentication, correction workflow and reminders are not implemented yet.
 - UI says "Saved on this phone. Not uploaded." No automatic upload is promised.
 - The demo database is not encrypted. Use fictional data only.
 - Clearing app data or uninstalling may remove records.
