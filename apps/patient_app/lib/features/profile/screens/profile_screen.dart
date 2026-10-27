@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/profile_repository.dart';
 import '../models/patient_profile.dart';
+import '../../../core/notifications/notification_test_card.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
@@ -229,6 +230,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          const NotificationTestCard(),
           const SizedBox(height: 16),
           const Text(
             'Saved on this phone only. No account or cloud backup is connected. '
